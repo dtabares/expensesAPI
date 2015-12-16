@@ -14,6 +14,12 @@
 .repl_history
 build/
 
+## Backup files
+*.bkp
+
+## Database files
+*.db
+
 ## Documentation cache and generated files:
 /.yardoc/
 /_yardoc/
