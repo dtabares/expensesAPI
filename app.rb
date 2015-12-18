@@ -55,7 +55,8 @@ post "/expenses/new" do
         @expenses = Expense.all(:deleted => false)
         {:expenses => @expenses, :status => "success"}.to_json
     else
-        {:expense => @expense, :status => "failure"}.to_json
+        status 500
+        body @expense.save.to_json
     end
 
 end
@@ -76,7 +77,8 @@ put "/expense/edit" do
         @expenses = Expense.all(:deleted => false)
         {:expenses => @expenses, :status => "success"}.to_json
     else
-        {:expense => @expense, :status => "failure"}.to_json
+        status 500
+        body @expense.save.to_json
     end
 end
 
@@ -92,6 +94,7 @@ put "/expense/delete" do
         @expenses = Expense.all(:deleted => false)
         {:expenses => @expenses, :status => "success"}.to_json
     else
-        {:expense => @expense, :status => "failure"}.to_json
+        status 500
+        body @expense.save.to_json
     end
 end
