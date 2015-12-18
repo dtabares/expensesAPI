@@ -12,13 +12,13 @@ before do
     content_type :json
     headers 'Access-Control-Allow-Origin' => '*',
             'Access-Control-Allow-Methods' => ['OPTIONS', 'GET', 'POST', 'PUT', 'DELETE'],
-            'Access-Control-Allow-Headers' => ['X-Requested-With', 'accept', 'Content-Type']
+            'Access-Control-Allow-Headers' => ['X-Requested-With', 'accept', 'Content-Type', 'application/json']
 end
 
 set :protection, false
 
 get "/expenses" do
-    @expenses = Expense.all
+    @expenses = Expense.all(:deleted => false)
     @expenses.to_json
 end
 
@@ -26,8 +26,19 @@ options '/expenses/new' do
     200
 end
 
+options "/expense" do
+  200
+end
+
+options "/expense/edit" do
+  200
+end
+
+options "/expense/delete" do
+  200
+end
+
 post "/expenses/new" do
-    #content_type :json
     begin
       params.merge! JSON.parse(request.env["rack.input"].read)
     rescue JSON::ParserError
@@ -41,34 +52,45 @@ post "/expenses/new" do
     @expense.value = params[:value]
     @expense.deleted = false
     if @expense.save
-        @expenses = Expense.all
+        @expenses = Expense.all(:deleted => false)
         {:expenses => @expenses, :status => "success"}.to_json
     else
         {:expense => @expense, :status => "failure"}.to_json
     end
 
-
 end
 
-put "/expenses/:id" do
-    @expense = Expense.find(params[:id])
+put "/expense/edit" do
+    begin
+      params.merge! JSON.parse(request.env["rack.input"].read)
+    rescue JSON::ParserError
+      logger.error "Cannot parse request body."
+    end
+    @expense = Expense.get(params[:id])
     @expense.date = DateTime.parse(params[:date])
     @expense.type = params[:type]
     @expense.subtype = params[:subtype]
     @expense.description = params[:description]
-    @expense.value = params[value]
+    @expense.value = params[:value]
     if @expense.save
-        {:expense => @expense, :status => "success"}.to_json
+        @expenses = Expense.all(:deleted => false)
+        {:expenses => @expenses, :status => "success"}.to_json
     else
         {:expense => @expense, :status => "failure"}.to_json
     end
 end
 
-delete "/expenses/:id" do
-    @expense = Expense.find(params[:id])
+put "/expense/delete" do
+    begin
+      params.merge! JSON.parse(request.env["rack.input"].read)
+    rescue JSON::ParserError
+      logger.error "Cannot parse request body."
+    end
+    @expense = Expense.get(params[:id])
     @expense.deleted = true
     if @expense.save
-        {:expense => @expense, :status => "success"}.to_json
+        @expenses = Expense.all(:deleted => false)
+        {:expenses => @expenses, :status => "success"}.to_json
     else
         {:expense => @expense, :status => "failure"}.to_json
     end
